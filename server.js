@@ -81,4 +81,43 @@
 
 // require packages
 //  inquirer
-//  
+const inquirer = require('inquirer');
+const mysql = require('mysql2');
+const dotenv = require('dotenv')   //  Not sure if I need this required
+
+// initial inquirer question
+const initQuestion = [
+    {
+        type: 'list',
+        message: 'What would you like to do?',
+        choices: ['View all employees', 'Add an employee', 'Update an employee role', 'View all roles', 'Add a role', 'View all departments', 'Add a department'],
+        name: 'initAnswer'
+    }
+]
+
+//  Initializing Function
+function init() {
+    //  Prompt initial question
+    inquirer.prompt(initQuestion)
+    // then take that response and if it = one of these run that function if not console.log('that was not a good input)
+    .then(resp => {
+        if(resp.initAnswer === 'View all employees'){
+            console.log('yay');
+        }else if(resp.initAnswer === 'Add an employee'){
+            console.log('yay2');
+        }else if(resp.initAnswer === 'Update an employee role'){
+            console.log('yay3');
+        }else if(resp.initAnswer === 'View all roles'){
+            console.log('yay4');
+        }else if(resp.initAnswer === 'Add a role'){
+            console.log('yay5');
+        }else if(resp.initAnswer === 'View all departments'){
+            console.log('yay6');
+        }else if(resp.initAnswer === 'Add a department'){
+            console.log('yay7');
+        } else {
+            console.log('That is not an input');
+        }
+    })
+};
+init();
