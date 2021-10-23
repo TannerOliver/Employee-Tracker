@@ -83,7 +83,24 @@
 //  inquirer
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
-const dotenv = require('dotenv')   //  Not sure if I need this required
+const dotenv = require('dotenv').config();
+const express = require('express'); //  I don't think we need express to get this working
+const { env } = require('process'); //  Not sure where this came from
+const app = express()   // if express isn't needed I wont need this
+const port = process.env.PORT || 3001
+
+app.use(express.json());    // if express isn't needed I wont need this
+app.use(express.urlencoded({ extended: true }));    // if express isn't needed I wont need this
+
+const db = mysql.createConnection(
+    {
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASS,
+        database: 'team_db'
+    },
+    console.log(`Connected to the database`)
+);
 
 // initial inquirer question
 const initQuestion = [
@@ -96,25 +113,50 @@ const initQuestion = [
 ]
 
 function viewEmployees() {
-    //  Make employees table show in console
+    //  query database and SELECT employee table then take that data and use console.table to display in console
+    db.query('SELECT * FROM employee' , function (err, results) {
+        if (results){
+            console.table(results)
+        } else {
+            console.log(err)
+        };
+    })
 };
 function addEmployee() {
-    //  Prompt questions about new emp
+    //  prompt addEmp questions
+    //  query database and INSERT INTO employee VALUE response given from prompt
 };
 function updateEmployee() {
-    //  Prompt what employee they wanna update and ask proper questiones depending on answers
+    //  prompt upEmp questions
+    //  query database and UPDATE employee WHERE that employee is
 };
 function viewRoles() {
-    //  Make roles table show in console
+    //  query database and SELECT * FROM role table then make it visible in console with console.table
+    db.query('SELECT * FROM role' , function (err, results) {
+        if (results){
+            console.table(results)
+        } else {
+            console.log(err)
+        };
+    })
 };
 function addRole() {
-    //  Prompt questions for adding role
+    //  prompt addRole questions
+    //  query database and INSERT INTO role table what user inputs as new role
 };
 function viewDepartments() {
-    //  Make departments table show in console
+    //  query database and SELECT * from department and use console.table to make visible in console
+    db.query('SELECT * FROM department' , function (err, results) {
+        if (results){
+            console.table(results)
+        } else {
+            console.log(err)
+        };
+    })
 };
 function addDepartment() {
-    //  Prompt questions for adding department
+    //  prompt addDept questions
+    //  query database and INSERT INTO department what user inputs as new department
 };
 //  Initializing Function
 function init() {
@@ -137,7 +179,7 @@ function init() {
         }else if(resp.initAnswer === 'Add a department'){
             addDepartment();
         } else {
-            console.log('That is not an input');
+            // Change this to a else if and exit application option so it's not an endless loop
         }
     })
 };
