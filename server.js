@@ -24,7 +24,7 @@
 
 //  Reccomendations From ReadMe
 //  Make queries asynchronous
-//  Seed Database
+//      X   Seed Database
 //  You might want to use a separate file that contains functions for performing 
 //      specific SQL queries you'll need to use. A constructor function or class
 //      couldbe helpful for organizing these. You might also want to include a 
@@ -32,22 +32,22 @@
 //      individualfeatures much easier.
 
 // Schema Layouts
-        //  Department
-            //  id  INT (should be linked to department_id)
-            //  name    varchar(30)
+        //      X   Department
+            //      X   id  INT (should be linked to department_id)
+            //      X   name    varchar(30)
 
-        //Role
-            //  id  INT (linked to role_id)
-            //  title   varchar(30)
-            //  salary  decimal
-            //  department_id   INT
+        //      X   Role
+            //      X   id  INT (linked to role_id)
+            //      X   title   varchar(30)
+            //      X   salary  decimal
+            //      X   department_id   INT
 
-        //Employee
-            //  id  INT
-            //first_name    varchar(30)
-            //last_name     varchar(30)
-            //role_id       INT
-            //manager_id    INT (linked to id somehow)
+        //  X   Employee
+            //      X   id  INT
+            //  X   first_name    varchar(30)
+            //  X   last_name     varchar(30)
+            //  X   role_id       INT
+            //  X   manager_id    INT (linked to id somehow)
 
 //  Inquirer Questions
         //  View All Employees
@@ -95,6 +95,27 @@ const initQuestion = [
     }
 ]
 
+function viewEmployees() {
+    //  Make employees table show in console
+};
+function addEmployee() {
+    //  Prompt questions about new emp
+};
+function updateEmployee() {
+    //  Prompt what employee they wanna update and ask proper questiones depending on answers
+};
+function viewRoles() {
+    //  Make roles table show in console
+};
+function addRole() {
+    //  Prompt questions for adding role
+};
+function viewDepartments() {
+    //  Make departments table show in console
+};
+function addDepartment() {
+    //  Prompt questions for adding department
+};
 //  Initializing Function
 function init() {
     //  Prompt initial question
@@ -102,19 +123,19 @@ function init() {
     // then take that response and if it = one of these run that function if not console.log('that was not a good input)
     .then(resp => {
         if(resp.initAnswer === 'View all employees'){
-            console.log('yay');
+            viewEmployees();
         }else if(resp.initAnswer === 'Add an employee'){
-            console.log('yay2');
+            addEmployee();
         }else if(resp.initAnswer === 'Update an employee role'){
-            console.log('yay3');
+            updateEmployee();
         }else if(resp.initAnswer === 'View all roles'){
-            console.log('yay4');
+            viewRoles();
         }else if(resp.initAnswer === 'Add a role'){
-            console.log('yay5');
+            addRole();
         }else if(resp.initAnswer === 'View all departments'){
-            console.log('yay6');
+            viewDepartments();
         }else if(resp.initAnswer === 'Add a department'){
-            console.log('yay7');
+            addDepartment();
         } else {
             console.log('That is not an input');
         }
