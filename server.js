@@ -84,13 +84,13 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const dotenv = require('dotenv').config();
-const express = require('express'); //  I don't think we need express to get this working
+// const express = require('express'); //  I don't think we need express to get this working
 const { env } = require('process'); //  Not sure where this came from
-const app = express()   // if express isn't needed I wont need this
+// const app = express()   // if express isn't needed I wont need this
 const port = process.env.PORT || 3001
 
-app.use(express.json());    // if express isn't needed I wont need this
-app.use(express.urlencoded({ extended: true }));    // if express isn't needed I wont need this
+// app.use(express.json());    // if express isn't needed I wont need this
+// app.use(express.urlencoded({ extended: true }));    // if express isn't needed I wont need this
 
 const db = mysql.createConnection(
     {
@@ -110,8 +110,72 @@ const initQuestion = [
         choices: ['View all employees', 'Add an employee', 'Update an employee role', 'View all roles', 'Add a role', 'View all departments', 'Add a department'],
         name: 'initAnswer'
     }
+];
+const addDepQuestion = [
+    {
+        type: 'input',
+        message: 'What is the name of the department?',
+        name: 'addDepAns'
+    }
+];
+const addRoleQuestions = [
+    {
+        type: 'input',
+        message: 'What is the name of then role?',
+        name: 'roleName'
+    },
+    {
+        type: 'input',
+        message: 'What is the salary of the role?',
+        name: 'roleSalary'
+    },
+    {
+        type: 'list',
+        message: 'What department does the role belong to?',
+        choices: [''], //I need a way to query whats in the database here.
+        name: 'roleDepartment'
+    }
+];
+const addEmpQuestions = [
+    {
+        type: 'input',
+        message: "What is the employee's first name?",
+        name: 'empFirstName'
+    },
+    {
+        type: 'input',
+        message: "what is the employee's last name?",
+        name: 'empLastName'
+    },
+    {
+        type: 'list',
+        message: "What is this employee's role?",
+        choices: [''], //   I need a way to query current list of roles
+        name: 'empRole'
+    },
+    {
+        type: 'list',
+        message: "What is the employee's manager?",
+        choices: [''], //   I need a way to query database for up to date list of managers
+        name: 'empManager'
+    }
+];
+const updateEmpQuestions = [
+    {
+        type: 'list',
+        message: "Which employee's role do you want to update?",
+        choices: [''],  //I need a way to query up to date list of emps from database
+        name: 'empName'
+    },
+    {
+        type: 'list',
+        message: 'Which role do you want to assign the selected employee?',
+        choices: [''],  //  I need a way to query database and get up to date list on the roles
+        name: 'empRole2'
+    }
 ]
 
+//  Functions
 function viewEmployees() {
     //  query database and SELECT employee table then take that data and use console.table to display in console
     db.query('SELECT * FROM employee' , function (err, results) {
@@ -120,15 +184,22 @@ function viewEmployees() {
         } else {
             console.log(err)
         };
+        init();
     })
 };
 function addEmployee() {
     //  prompt addEmp questions
-    //  query database and INSERT INTO employee VALUE response given from prompt
+    inquirer.prompt(addEmpQuestions).then(resp => {
+        //  query database and INSERT INTO employee VALUE response given from prompt
+        init();
+    })
 };
 function updateEmployee() {
     //  prompt upEmp questions
-    //  query database and UPDATE employee WHERE that employee is
+    inquirer.prompt(updateEmpQuestions).then(resp => {
+         //  query database and UPDATE employee WHERE that employee is
+         init();
+    })
 };
 function viewRoles() {
     //  query database and SELECT * FROM role table then make it visible in console with console.table
@@ -138,11 +209,15 @@ function viewRoles() {
         } else {
             console.log(err)
         };
+        init();
     })
 };
 function addRole() {
     //  prompt addRole questions
-    //  query database and INSERT INTO role table what user inputs as new role
+    inquirer.prompt(addRoleQuestions).then(resp => {
+        //  query database and INSERT INTO role table what user inputs as new role
+        init();
+    })
 };
 function viewDepartments() {
     //  query database and SELECT * from department and use console.table to make visible in console
@@ -152,11 +227,15 @@ function viewDepartments() {
         } else {
             console.log(err)
         };
+        init();
     })
 };
 function addDepartment() {
     //  prompt addDept questions
-    //  query database and INSERT INTO department what user inputs as new department
+    inquirer.prompt(addDepQuestion).then(resp => {
+        //  query database and INSERT INTO department what user inputs as new department
+    init();
+    })
 };
 //  Initializing Function
 function init() {
