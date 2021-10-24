@@ -76,21 +76,11 @@
 //  Create database we will be working out of
 //  Create Seeds.sql for database
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//  This will be main js file where everything gets built and put together.
-
-// require packages
-//  inquirer
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const dotenv = require('dotenv').config();
-// const express = require('express'); //  I don't think we need express to get this working
 const { env } = require('process'); //  Not sure where this came from
-// const app = express()   // if express isn't needed I wont need this
 const port = process.env.PORT || 3001
-
-// app.use(express.json());    // if express isn't needed I wont need this
-// app.use(express.urlencoded({ extended: true }));    // if express isn't needed I wont need this
 
 const db = mysql.createConnection(
     {
@@ -115,7 +105,7 @@ const addDepQuestion = [
     {
         type: 'input',
         message: 'What is the name of the department?',
-        name: 'addDepAns'
+        name: 'addDepartmentAnswer'
     }
 ];
 const addRoleQuestions = [
@@ -180,63 +170,98 @@ function viewEmployees() {
     //  query database and SELECT employee table then take that data and use console.table to display in console
     db.query('SELECT * FROM employee' , function (err, results) {
         if (results){
-            console.table(results)
+            console.table(results);
+            init();
         } else {
-            console.log(err)
+            console.log(err);
+            init();
         };
-        init();
     })
 };
+
 function addEmployee() {
     //  prompt addEmp questions
     inquirer.prompt(addEmpQuestions).then(resp => {
         //  query database and INSERT INTO employee VALUE response given from prompt
-        init();
+        db.query('INSERT INTO employee VALUES (?, ?)', [resp.empFirstName, resp.empLastName], function (err, result) {
+            if (results){
+                console.log('Employee sucessfully added!');
+                init();
+            } else {
+                console.log("Employee wasn't added");
+                init();
+            }
+        })
     })
 };
+
 function updateEmployee() {
     //  prompt upEmp questions
     inquirer.prompt(updateEmpQuestions).then(resp => {
          //  query database and UPDATE employee WHERE that employee is
+         db.query('UPDATE employee WHERE (?)')  //  TODO: finsih me
          init();
     })
 };
+
 function viewRoles() {
     //  query database and SELECT * FROM role table then make it visible in console with console.table
     db.query('SELECT * FROM role' , function (err, results) {
         if (results){
-            console.table(results)
+            console.table(results);
+            init();
         } else {
-            console.log(err)
+            console.log(err);
+            init();
         };
-        init();
     })
 };
+
 function addRole() {
     //  prompt addRole questions
     inquirer.prompt(addRoleQuestions).then(resp => {
         //  query database and INSERT INTO role table what user inputs as new role
-        init();
+        db.query('INSERT INTO role VALUES (?, ?)' [resp.roleName, resp.roleSalary], function (err, results){
+            if (results){
+                console.log('Role added sucessfully added!');
+                init();
+            } else {
+                console.log("Role couldn't be added");
+                init();
+            }
+        })
     })
 };
+
 function viewDepartments() {
     //  query database and SELECT * from department and use console.table to make visible in console
     db.query('SELECT * FROM department' , function (err, results) {
         if (results){
-            console.table(results)
+            console.table(results);
+            init();
         } else {
-            console.log(err)
+            console.log(err);
+            init();
         };
-        init();
     })
 };
+
 function addDepartment() {
     //  prompt addDept questions
     inquirer.prompt(addDepQuestion).then(resp => {
         //  query database and INSERT INTO department what user inputs as new department
-    init();
+        db.query('INSERT INTO department VALUES (?)', resp.addDepartmentAnswer, function(err,results) {
+            if(results) {
+                console.log('Department added sucessfully!');
+                init();
+            } else {
+                console.log("Department couldn't be added");
+                init();
+            }
+        })
     })
 };
+
 //  Initializing Function
 function init() {
     //  Prompt initial question
