@@ -108,24 +108,6 @@ const addDepQuestion = [
         name: 'addDepartmentAnswer'
     }
 ];
-const addRoleQuestions = [
-    {
-        type: 'input',
-        message: 'What is the name of then role?',
-        name: 'roleName'
-    },
-    {
-        type: 'input',
-        message: 'What is the salary of the role?',
-        name: 'roleSalary'
-    },
-    {
-        type: 'list',
-        message: 'What department does the role belong to?',
-        choices: [''], //I need a way to query whats in the database here.
-        name: 'roleDepartment'
-    }
-];
 const addEmpQuestions = [
     {
         type: 'input',
@@ -199,8 +181,8 @@ function updateEmployee() {
     //  prompt upEmp questions
     inquirer.prompt(updateEmpQuestions).then(resp => {
          //  query database and UPDATE employee WHERE that employee is
-         db.query('UPDATE employee WHERE (?)')  //  TODO: finsih me
-         init();
+        db.query('UPDATE employee WHERE (?)')  //  TODO: finsih me
+        init();
     })
 };
 
@@ -217,21 +199,50 @@ function viewRoles() {
     })
 };
 
-function addRole() {
-    //  prompt addRole questions
-    inquirer.prompt(addRoleQuestions).then(resp => {
-        //  query database and INSERT INTO role table what user inputs as new role
-        db.query('INSERT INTO role VALUES (?, ?)' [resp.roleName, resp.roleSalary], function (err, results){
+// This needs to be asychronous and we need to wait for a response from database on a list of the departments for one of the prompts
+async function addRole() {
+    //  im letting dbQuery = the resolve of a database query
+    let dbQuery = await addRoleQuery();
+    console.log(dbQuery);
+    //  Second I want to prompt the addRoleQuestions 
+    inquirer.prompt([
+        {
+            type: 'input',
+            message: 'What is the name of then role?',
+            name: 'roleName'
+        },
+        {
+            type: 'number',
+            message: 'What is the salary of the role?',
+            name: 'roleSalary'
+        },
+        {
+            type: 'list',
+            message: 'What department does the role belong to?',
+            choices: dbQuery, //I need a way to query whats in the database here.
+            name: 'roleDepartment'
+        }
+    ]).then(resp => {
+        db.query('INSERT INTO role(title, salary) VALUES (?, ?)', [resp.roleName, resp.roleSalary], (err, results) => {
             if (results){
-                console.log('Role added sucessfully added!');
+                console.log('Role added sucessfully');
                 init();
             } else {
-                console.log("Role couldn't be added");
+                console.log(`Role couldn't be added`);
                 init();
             }
         })
     })
 };
+function addRoleQuery() {
+    return new Promise((resolve, reject) => {
+        console.log('Making request to database')
+        db.query('SELECT name FROM department', (err, res) => {
+            if (err) reject(err);
+            resolve(res);
+        })
+    })
+}
 
 function viewDepartments() {
     //  query database and SELECT * from department and use console.table to make visible in console
