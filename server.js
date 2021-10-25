@@ -177,15 +177,60 @@ function addEmployee() {
     })
 };
 
-function updateEmployee() {
+async function updateEmployee() {
+    // let dbQuery = await updateEmployeeQuery
+    let dbQuery2 = await updateEmployeeQuery();
+    console.log(dbQuery2);
+    //  let dbQuery2 = await updateEmployeeQuery2
+    let dbQuery3 = await updateEmployeeQuery2();
+    console.log(dbQuery3);
     //  prompt upEmp questions
-    inquirer.prompt(updateEmpQuestions).then(resp => {
-         //  query database and UPDATE employee WHERE that employee is
-        db.query('UPDATE employee WHERE (?)')  //  TODO: finsih me
-        init();
+    inquirer.prompt([
+        {
+            type: 'list',
+            message: "Which employee do you want to update?",
+            choices: dbQuery2,
+            name: 'empName'
+        },
+        {
+            type: 'list',
+            message: 'Which role do you want to assign the selected employee?',
+            choices: [''],
+            name: 'empRole2'
+        }
+    ]).then(resp => {
+        db.query('UPDATE employee WHERE (?, ?)', [resp.empName, resp.empRole2], (err, results) => {
+            if (results){
+                console.log('Employee updated sucessfully');
+                init();
+            } else {
+                console.log(`Couldn't update employee`);
+                init();
+            }
+        })
     })
 };
-
+//  X
+function updateEmployeeQuery() {
+    return new Promise((resolve, reject) => {
+        console.log('Making request to database');
+        db.query('SELECT * FROM employee', (err, res) => {
+            if (err) reject(err);
+            resolve(res);
+        })
+    })
+};
+//  X
+function updateEmployeeQuery2() {
+    return new Promise((resolve, reject) => {
+        console.log('Making request to database')
+        db.query('SELECT * FROM role', (err, res) => {
+            if (err) reject(err);
+            resolve(res);
+        })
+    })
+};
+//  X
 function viewRoles() {
     //  query database and SELECT * FROM role table then make it visible in console with console.table
     db.query('SELECT * FROM role' , function (err, results) {
@@ -198,7 +243,7 @@ function viewRoles() {
         };
     })
 };
-
+//  X
 // This needs to be asychronous and we need to wait for a response from database on a list of the departments for one of the prompts
 async function addRole() {
     //  im letting dbQuery = the resolve of a database query
@@ -223,7 +268,7 @@ async function addRole() {
             name: 'roleDepartment'
         }
     ]).then(resp => {
-        db.query('INSERT INTO role(title, salary) VALUES (?, ?)', [resp.roleName, resp.roleSalary], (err, results) => {
+        db.query('INSERT INTO role(title, salary, department_id) VALUES (?, ?, ?)', [resp.roleName, resp.roleSalary, resp.roleDepartment.id], (err, results) => {
             if (results){
                 console.log('Role added sucessfully');
                 init();
@@ -234,16 +279,17 @@ async function addRole() {
         })
     })
 };
+//  X
 function addRoleQuery() {
     return new Promise((resolve, reject) => {
         console.log('Making request to database')
-        db.query('SELECT name FROM department', (err, res) => {
+        db.query('SELECT * FROM department', (err, res) => {
             if (err) reject(err);
             resolve(res);
         })
     })
 }
-
+//  X
 function viewDepartments() {
     //  query database and SELECT * from department and use console.table to make visible in console
     db.query('SELECT * FROM department' , function (err, results) {
@@ -256,12 +302,12 @@ function viewDepartments() {
         };
     })
 };
-
+//  X
 function addDepartment() {
     //  prompt addDept questions
     inquirer.prompt(addDepQuestion).then(resp => {
         //  query database and INSERT INTO department what user inputs as new department
-        db.query('INSERT INTO department VALUES (?)', resp.addDepartmentAnswer, function(err,results) {
+        db.query('INSERT INTO department (name) VALUES (?)', resp.addDepartmentAnswer, function(err,results) {
             if(results) {
                 console.log('Department added sucessfully!');
                 init();
