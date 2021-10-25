@@ -132,21 +132,6 @@ const addEmpQuestions = [
         name: 'empManager'
     }
 ];
-const updateEmpQuestions = [
-    {
-        type: 'list',
-        message: "Which employee's role do you want to update?",
-        choices: [''],  //I need a way to query up to date list of emps from database
-        name: 'empName'
-    },
-    {
-        type: 'list',
-        message: 'Which role do you want to assign the selected employee?',
-        choices: [''],  //  I need a way to query database and get up to date list on the roles
-        name: 'empRole2'
-    }
-]
-
 //  Functions
 function viewEmployees() {
     //  query database and SELECT employee table then take that data and use console.table to display in console
@@ -161,7 +146,7 @@ function viewEmployees() {
     })
 };
 
-function addEmployee() {
+function addEmployee() { //TODO: fix this function
     //  prompt addEmp questions
     inquirer.prompt(addEmpQuestions).then(resp => {
         //  query database and INSERT INTO employee VALUE response given from prompt
@@ -189,13 +174,13 @@ async function updateEmployee() {
         {
             type: 'list',
             message: "Which employee do you want to update?",
-            choices: dbQuery2,
+            choices: dbQuery2,  // choices are showing up as undefined
             name: 'empName'
         },
         {
             type: 'list',
             message: 'Which role do you want to assign the selected employee?',
-            choices: [''],
+            choices: dbQuery3,  //  choices are showing up as undefined
             name: 'empRole2'
         }
     ]).then(resp => {
