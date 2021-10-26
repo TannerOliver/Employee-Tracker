@@ -1,10 +1,10 @@
 //  GIVEN a command-line application that accepts user input
-//      WHEN I start the application
-//          THEN I am presented with the following options: view all departments, view all roles, view all employees, add a department, add a role, add an employee, and update an employee role
-//      WHEN I choose to view all departments
-//          THEN I am presented with a formatted table showing department names and department ids
-//      WHEN I choose to view all roles
-//          THEN I am presented with the job title, role id, the department that role belongs to, and the salary for that role
+//      X WHEN I start the application
+//          X THEN I am presented with the following options: view all departments, view all roles, view all employees, add a department, add a role, add an employee, and update an employee role
+//      X WHEN I choose to view all departments
+//          X THEN I am presented with a formatted table showing department names and department ids
+//      X WHEN I choose to view all roles
+//          X THEN I am presented with the job title, role id, the department that role belongs to, and the salary for that role
 //      WHEN I choose to view all employees
 //          THEN I am presented with a formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to
 //      WHEN I choose to add a department
@@ -101,35 +101,12 @@ const initQuestion = [
         name: 'initAnswer'
     }
 ];
+
 const addDepQuestion = [
     {
         type: 'input',
         message: 'What is the name of the department?',
         name: 'addDepartmentAnswer'
-    }
-];
-const addEmpQuestions = [
-    {
-        type: 'input',
-        message: "What is the employee's first name?",
-        name: 'empFirstName'
-    },
-    {
-        type: 'input',
-        message: "what is the employee's last name?",
-        name: 'empLastName'
-    },
-    {
-        type: 'list',
-        message: "What is this employee's role?",
-        choices: [''], //   I need a way to query current list of roles
-        name: 'empRole'
-    },
-    {
-        type: 'list',
-        message: "What is the employee's manager?",
-        choices: [''], //   I need a way to query database for up to date list of managers
-        name: 'empManager'
     }
 ];
 //  Functions
@@ -144,20 +121,95 @@ function viewEmployees() {
             init();
         };
     })
+};  //  Lowest Priority TODO: add it so these job titles, departments and salaries are visible on employees are also visible
+
+function viewRoles() {
+    //  query database and SELECT * FROM role table then make it visible in console with console.table
+    db.query('SELECT * FROM role' , function (err, results) {
+        if (results){
+            console.table(results);
+            init();
+        } else {
+            console.log(err);
+            init();
+        };
+    })
 };
 
-function addEmployee() { //TODO: fix this function
+function viewDepartments() {
+    //  query database and SELECT * from department and use console.table to make visible in console
+    db.query('SELECT * FROM department' , function (err, results) {
+        if (results){
+            console.table(results);
+            init();
+        } else {
+            console.log(err);
+            init();
+        };
+    })
+};
+
+async function addEmployee() {
+    // I need to query database for list of roles
+    let dbQuery4 = await addEmployeeQuery();
+    console.log(dbQuery4);
+    //  I need to query database for list of managers
+    let dbQuery5 = await addEmployeeQuery2();
+    console.log(dbQuery5);
+
     //  prompt addEmp questions
-    inquirer.prompt(addEmpQuestions).then(resp => {
-        //  query database and INSERT INTO employee VALUE response given from prompt
-        db.query('INSERT INTO employee VALUES (?, ?)', [resp.empFirstName, resp.empLastName], function (err, result) {
+    inquirer.prompt([
+        {
+            type: 'input',
+            message: "What is the employee's first name?",
+            name: 'empFirstName'
+        },
+        {
+            type: 'input',
+            message: "what is the employee's last name?",
+            name: 'empLastName'
+        },
+        {
+            type: 'list',
+            message: "What is this employee's role?",
+            choices: dbQuery4, 
+            name: 'empRole'
+        },
+        {
+            type: 'list',
+            message: "What is the employee's manager?",
+            choices: dbQuery5, 
+            name: 'empManager'
+        }
+    ]).then(resp => {
+        db.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', [resp.empFirstName, resp.empLastName, resp.empRole, resp.empManager], (err, results) => {
             if (results){
-                console.log('Employee sucessfully added!');
-                init();
+                console.log('Employee added sucessfully');
+                init()
             } else {
-                console.log("Employee wasn't added");
+                console.log(`Employee couldn't be added`);
                 init();
             }
+        })
+    })
+};  //  TODO: Fix Me
+
+function addEmployeeQuery() {
+    return new Promise((resolve, reject) => {
+        console.log('Making request to database');
+        db.query(`SELECT title AS name FROM role`, (err, res) => {
+            if (err) reject(err);
+            resolve(res);
+        })
+    })
+};
+
+function addEmployeeQuery2() {
+    return new Promise((resolve, reject) => {
+        console.log('Making request to daabase');
+        db.query(`SELECT CONCAT(employee.first_name, ' ', employee.last_name, ' ', employee.manager_id) AS name FROM employee`, (err, res) => {
+            if (err) reject(err);
+            resolve(res);
         })
     })
 };
@@ -166,9 +218,11 @@ async function updateEmployee() {
     // let dbQuery = await updateEmployeeQuery
     let dbQuery2 = await updateEmployeeQuery();
     console.log(dbQuery2);
+
     //  let dbQuery2 = await updateEmployeeQuery2
     let dbQuery3 = await updateEmployeeQuery2();
     console.log(dbQuery3);
+
     //  prompt upEmp questions
     inquirer.prompt([
         {
@@ -184,7 +238,7 @@ async function updateEmployee() {
             name: 'empRole2'
         }
     ]).then(resp => {
-        db.query('UPDATE employee WHERE (?, ?)', [resp.empName, resp.empRole2], (err, results) => {
+        db.query('UPDATE employee SET role_id = (?)  WHERE (?)', [resp.empRole2, resp.empName], (err, results) => {
             if (results){
                 console.log('Employee updated sucessfully');
                 init();
@@ -194,47 +248,32 @@ async function updateEmployee() {
             }
         })
     })
-};
-//  X
+};  //  TODO: Fix Me
+
 function updateEmployeeQuery() {
     return new Promise((resolve, reject) => {
         console.log('Making request to database');
-        db.query('SELECT * FROM employee', (err, res) => {
+        db.query(`SELECT CONCAT(employee.first_name, ' ', employee.last_name) AS name FROM employee`, (err, res) => {
             if (err) reject(err);
             resolve(res);
         })
     })
 };
-//  X
+
 function updateEmployeeQuery2() {
     return new Promise((resolve, reject) => {
         console.log('Making request to database')
-        db.query('SELECT * FROM role', (err, res) => {
+        db.query('SELECT title AS name FROM role', (err, res) => {
             if (err) reject(err);
             resolve(res);
         })
     })
 };
-//  X
-function viewRoles() {
-    //  query database and SELECT * FROM role table then make it visible in console with console.table
-    db.query('SELECT * FROM role' , function (err, results) {
-        if (results){
-            console.table(results);
-            init();
-        } else {
-            console.log(err);
-            init();
-        };
-    })
-};
-//  X
-// This needs to be asychronous and we need to wait for a response from database on a list of the departments for one of the prompts
+
 async function addRole() {
-    //  im letting dbQuery = the resolve of a database query
     let dbQuery = await addRoleQuery();
     console.log(dbQuery);
-    //  Second I want to prompt the addRoleQuestions 
+    let queryChoices = dbQuery.map(({id, name}) => ({name: name, id: id}))
     inquirer.prompt([
         {
             type: 'input',
@@ -249,10 +288,15 @@ async function addRole() {
         {
             type: 'list',
             message: 'What department does the role belong to?',
-            choices: dbQuery, //I need a way to query whats in the database here.
+            choices: queryChoices,
             name: 'roleDepartment'
         }
     ]).then(resp => {
+        // I need to figure out if roleDepartment still has the id attached after inquirer prompt and use that to pass into query
+        //I saw something that defined a var for resp.roleDepartment
+        // Then used findIndex to find the int I am looking for possibly
+        //  then let another variable = the id I am looking for
+        console.log(resp.roleDepartment.id);
         db.query('INSERT INTO role(title, salary, department_id) VALUES (?, ?, ?)', [resp.roleName, resp.roleSalary, resp.roleDepartment.id], (err, results) => {
             if (results){
                 console.log('Role added sucessfully');
@@ -263,8 +307,8 @@ async function addRole() {
             }
         })
     })
-};
-//  X
+};  //   TODO: Fix Me
+
 function addRoleQuery() {
     return new Promise((resolve, reject) => {
         console.log('Making request to database')
@@ -273,21 +317,8 @@ function addRoleQuery() {
             resolve(res);
         })
     })
-}
-//  X
-function viewDepartments() {
-    //  query database and SELECT * from department and use console.table to make visible in console
-    db.query('SELECT * FROM department' , function (err, results) {
-        if (results){
-            console.table(results);
-            init();
-        } else {
-            console.log(err);
-            init();
-        };
-    })
 };
-//  X
+
 function addDepartment() {
     //  prompt addDept questions
     inquirer.prompt(addDepQuestion).then(resp => {
@@ -304,7 +335,6 @@ function addDepartment() {
     })
 };
 
-//  Initializing Function
 function init() {
     //  Prompt initial question
     inquirer.prompt(initQuestion)
@@ -329,4 +359,5 @@ function init() {
         }
     })
 };
+
 init();
