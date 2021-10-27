@@ -1,4 +1,3 @@
--- create database seeds here
 USE team_db;
 
 INSERT INTO department(name)

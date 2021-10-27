@@ -1,85 +1,6 @@
-//  GIVEN a command-line application that accepts user input
-//      X WHEN I start the application
-//          X THEN I am presented with the following options: view all departments, view all roles, view all employees, add a department, add a role, add an employee, and update an employee role
-//      X WHEN I choose to view all departments
-//          X THEN I am presented with a formatted table showing department names and department ids
-//      X WHEN I choose to view all roles
-//          X THEN I am presented with the job title, role id, the department that role belongs to, and the salary for that role
-//      WHEN I choose to view all employees
-//          THEN I am presented with a formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to
-//      WHEN I choose to add a department
-//          THEN I am prompted to enter the name of the department and that department is added to the database
-//      WHEN I choose to add a role
-//          THEN I am prompted to enter the name, salary, and department for the role and that role is added to the database
-//      WHEN I choose to add an employee
-//          THEN I am prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
-//      WHEN I choose to update an employee role
-//          THEN I am prompted to select an employee to update and their new role and this information is updated in the database 
-
-//  Packages the read me tells me I will need
-//      X   mysql2 package
-//      X   inquirer package
-//      X   console.table package
-//      X   dotenv package
-
-//  Reccomendations From ReadMe
-//  Make queries asynchronous
-//      X   Seed Database
-//  You might want to use a separate file that contains functions for performing 
-//      specific SQL queries you'll need to use. A constructor function or class
-//      couldbe helpful for organizing these. You might also want to include a 
-//      seeds.sql file to pre-populate your database, making the development of
-//      individualfeatures much easier.
-
-// Schema Layouts
-        //      X   Department
-            //      X   id  INT (should be linked to department_id)
-            //      X   name    varchar(30)
-
-        //      X   Role
-            //      X   id  INT (linked to role_id)
-            //      X   title   varchar(30)
-            //      X   salary  decimal
-            //      X   department_id   INT
-
-        //  X   Employee
-            //      X   id  INT
-            //  X   first_name    varchar(30)
-            //  X   last_name     varchar(30)
-            //  X   role_id       INT
-            //  X   manager_id    INT (linked to id somehow)
-
-//  Inquirer Questions
-        //  View All Employees
-            // Brings up a list of all employees with their id, fname, lname, job title, department, salary, and manager unless there is none then manager will be null
-        //  Add Employee
-            //  This brings up a question asking the first name
-            //  Last name
-            //  What role they have
-            //  Who is their manager
-        //  Update Employee Role
-            //  This should bring up a list of all employees asking which one they want to select
-            //  Then it should ask what role they are switching over to
-        //  View All Roles
-            //  Brings up list of all roles in company with id title department and salary
-                //  Sales Lead, Salesperson, Lead Engineer, Software Engineer, Account Manager, Accountant, Legal Team Lead, Lawyer
-        //  Add Roles
-            //  This should bring up a new question of what is the name of the role
-            //  Then ask what is the salary of this position
-            //  Then ask which department this role will be in
-        //  View All Departments
-            //  Brings up list of all departments with id numbers
-        //  Add Department
-            //  This will prompt a question of what the department name should be
-
-//  I need to create file structure and basic layout of whole project first
-//  Create database we will be working out of
-//  Create Seeds.sql for database
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const dotenv = require('dotenv').config();
-const { env } = require('process'); //  Not sure where this came from
 const port = process.env.PORT || 3001
 
 const db = mysql.createConnection(
@@ -92,7 +13,6 @@ const db = mysql.createConnection(
     console.log(`Connected to the database`)
 );
 
-// initial inquirer question
 const initQuestion = [
     {
         type: 'list',
@@ -109,10 +29,9 @@ const addDepQuestion = [
         name: 'addDepartmentAnswer'
     }
 ];
-//  Functions
+
 function viewEmployees() {
-    //  query database and SELECT employee table then take that data and use console.table to display in console
-    db.query('SELECT * FROM employee' , function (err, results) {
+    db.query('SELECT * FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id' , function (err, results) {
         if (results){
             console.table(results);
             init();
@@ -121,10 +40,9 @@ function viewEmployees() {
             init();
         };
     })
-};  //  Lowest Priority TODO: add it so these job titles, departments and salaries are visible on employees are also visible
+};
 
 function viewRoles() {
-    //  query database and SELECT * FROM role table then make it visible in console with console.table
     db.query('SELECT * FROM role' , function (err, results) {
         if (results){
             console.table(results);
@@ -137,7 +55,6 @@ function viewRoles() {
 };
 
 function viewDepartments() {
-    //  query database and SELECT * from department and use console.table to make visible in console
     db.query('SELECT * FROM department' , function (err, results) {
         if (results){
             console.table(results);
@@ -150,14 +67,13 @@ function viewDepartments() {
 };
 
 async function addEmployee() {
-    // I need to query database for list of roles
     let dbQuery4 = await addEmployeeQuery();
-    console.log(dbQuery4);
-    //  I need to query database for list of managers
-    let dbQuery5 = await addEmployeeQuery2();
-    console.log(dbQuery5);
+    let queryChoices4 = dbQuery4.map(({id, name}) => ({name: name, value: id}));
 
-    //  prompt addEmp questions
+    let dbQuery5 = await addEmployeeQuery2();
+    let queryChoices5 = dbQuery5.map(({id, name}) => ({name: name, value: id}));
+    // if manager_id === null then push that employee into a list for ssot of managers
+
     inquirer.prompt([
         {
             type: 'input',
@@ -172,13 +88,13 @@ async function addEmployee() {
         {
             type: 'list',
             message: "What is this employee's role?",
-            choices: dbQuery4, 
+            choices: queryChoices4, 
             name: 'empRole'
         },
         {
             type: 'list',
             message: "What is the employee's manager?",
-            choices: dbQuery5, 
+            choices: queryChoices5, 
             name: 'empManager'
         }
     ]).then(resp => {
@@ -192,12 +108,11 @@ async function addEmployee() {
             }
         })
     })
-};  //  TODO: Fix Me
+};  //  Add logic for filtering out if a employee is a manager
 
 function addEmployeeQuery() {
     return new Promise((resolve, reject) => {
-        console.log('Making request to database');
-        db.query(`SELECT title AS name FROM role`, (err, res) => {
+        db.query(`SELECT id, title AS name FROM role`, (err, res) => {
             if (err) reject(err);
             resolve(res);
         })
@@ -206,8 +121,7 @@ function addEmployeeQuery() {
 
 function addEmployeeQuery2() {
     return new Promise((resolve, reject) => {
-        console.log('Making request to daabase');
-        db.query(`SELECT CONCAT(employee.first_name, ' ', employee.last_name, ' ', employee.manager_id) AS name FROM employee`, (err, res) => {
+        db.query(`SELECT id, manager_id, CONCAT(employee.first_name, ' ', employee.last_name) AS name FROM employee`, (err, res) => {
             if (err) reject(err);
             resolve(res);
         })
@@ -215,30 +129,27 @@ function addEmployeeQuery2() {
 };
 
 async function updateEmployee() {
-    // let dbQuery = await updateEmployeeQuery
     let dbQuery2 = await updateEmployeeQuery();
-    console.log(dbQuery2);
+    let queryChoices2 = dbQuery2.map(({id, name}) => ({name: name, value:id})) 
 
-    //  let dbQuery2 = await updateEmployeeQuery2
     let dbQuery3 = await updateEmployeeQuery2();
-    console.log(dbQuery3);
+    let queryChoices3 = dbQuery3.map(({id, name}) => ({name: name, value:id}))
 
-    //  prompt upEmp questions
     inquirer.prompt([
         {
             type: 'list',
             message: "Which employee do you want to update?",
-            choices: dbQuery2,  // choices are showing up as undefined
+            choices: queryChoices2,
             name: 'empName'
         },
         {
             type: 'list',
             message: 'Which role do you want to assign the selected employee?',
-            choices: dbQuery3,  //  choices are showing up as undefined
+            choices: queryChoices3,
             name: 'empRole2'
         }
     ]).then(resp => {
-        db.query('UPDATE employee SET role_id = (?)  WHERE (?)', [resp.empRole2, resp.empName], (err, results) => {
+        db.query('UPDATE employee SET role_id = (?)  WHERE id = (?)', [resp.empRole2, resp.empName], (err, results) => {
             if (results){
                 console.log('Employee updated sucessfully');
                 init();
@@ -248,12 +159,11 @@ async function updateEmployee() {
             }
         })
     })
-};  //  TODO: Fix Me
+};
 
 function updateEmployeeQuery() {
     return new Promise((resolve, reject) => {
-        console.log('Making request to database');
-        db.query(`SELECT CONCAT(employee.first_name, ' ', employee.last_name) AS name FROM employee`, (err, res) => {
+        db.query(`SELECT id, CONCAT(employee.first_name, ' ', employee.last_name) AS name FROM employee`, (err, res) => {
             if (err) reject(err);
             resolve(res);
         })
@@ -262,8 +172,7 @@ function updateEmployeeQuery() {
 
 function updateEmployeeQuery2() {
     return new Promise((resolve, reject) => {
-        console.log('Making request to database')
-        db.query('SELECT title AS name FROM role', (err, res) => {
+        db.query('SELECT id, title AS name FROM role', (err, res) => {
             if (err) reject(err);
             resolve(res);
         })
@@ -272,8 +181,7 @@ function updateEmployeeQuery2() {
 
 async function addRole() {
     let dbQuery = await addRoleQuery();
-    console.log(dbQuery);
-    let queryChoices = dbQuery.map(({id, name}) => ({name: name, id: id}))
+    let queryChoices = dbQuery.map(({id, name}) => ({name: name, value: id}))
     inquirer.prompt([
         {
             type: 'input',
@@ -292,12 +200,7 @@ async function addRole() {
             name: 'roleDepartment'
         }
     ]).then(resp => {
-        // I need to figure out if roleDepartment still has the id attached after inquirer prompt and use that to pass into query
-        //I saw something that defined a var for resp.roleDepartment
-        // Then used findIndex to find the int I am looking for possibly
-        //  then let another variable = the id I am looking for
-        console.log(resp.roleDepartment.id);
-        db.query('INSERT INTO role(title, salary, department_id) VALUES (?, ?, ?)', [resp.roleName, resp.roleSalary, resp.roleDepartment.id], (err, results) => {
+        db.query('INSERT INTO role(title, salary, department_id) VALUES (?, ?, ?)', [resp.roleName, resp.roleSalary, resp.roleDepartment], (err, results) => {
             if (results){
                 console.log('Role added sucessfully');
                 init();
@@ -307,11 +210,10 @@ async function addRole() {
             }
         })
     })
-};  //   TODO: Fix Me
+};
 
 function addRoleQuery() {
     return new Promise((resolve, reject) => {
-        console.log('Making request to database')
         db.query('SELECT * FROM department', (err, res) => {
             if (err) reject(err);
             resolve(res);
@@ -320,9 +222,7 @@ function addRoleQuery() {
 };
 
 function addDepartment() {
-    //  prompt addDept questions
     inquirer.prompt(addDepQuestion).then(resp => {
-        //  query database and INSERT INTO department what user inputs as new department
         db.query('INSERT INTO department (name) VALUES (?)', resp.addDepartmentAnswer, function(err,results) {
             if(results) {
                 console.log('Department added sucessfully!');
@@ -336,9 +236,7 @@ function addDepartment() {
 };
 
 function init() {
-    //  Prompt initial question
     inquirer.prompt(initQuestion)
-    // then take that response and if it = one of these run that function if not console.log('that was not a good input)
     .then(resp => {
         if(resp.initAnswer === 'View all employees'){
             viewEmployees();
@@ -354,10 +252,8 @@ function init() {
             viewDepartments();
         }else if(resp.initAnswer === 'Add a department'){
             addDepartment();
-        } else {
-            // Change this to a else if and exit application option so it's not an endless loop
-        }
-    })
+        };
+    });
 };
 
 init();
