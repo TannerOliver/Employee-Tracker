@@ -72,7 +72,6 @@ async function addEmployee() {
 
     let dbQuery5 = await addEmployeeQuery2();
     let queryChoices5 = dbQuery5.map(({id, name}) => ({name: name, value: id}));
-    // if manager_id === null then push that employee into a list for ssot of managers
 
     inquirer.prompt([
         {
@@ -108,7 +107,7 @@ async function addEmployee() {
             }
         })
     })
-};  //  Add logic for filtering out if a employee is a manager
+};
 
 function addEmployeeQuery() {
     return new Promise((resolve, reject) => {
